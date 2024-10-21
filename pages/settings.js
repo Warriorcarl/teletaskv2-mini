@@ -1,12 +1,11 @@
 import { Box, Typography, Button, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useRouter } from 'next/router'; // Untuk navigasi kembali
+import { useRouter } from 'next/router'; 
 
 const SettingsPage = () => {
-  const router = useRouter(); // Navigasi kembali
+  const router = useRouter();
 
   const handleSaveSettings = async () => {
-    // Simpan pengaturan
     await fetch('/api/save-settings', {
       method: 'POST',
       headers: {

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import MainMenu from '../components/MainMenu';
 import { Box, Typography } from '@mui/material';
+import MainMenu from '../components/MainMenu';
 
 const HomePage = () => {
   const [username, setUsername] = useState(null);
@@ -20,21 +19,12 @@ const HomePage = () => {
   }, []);
 
   return (
-    <Box 
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        backgroundColor: '#000',
-      }}
-    >
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#000' }}>
       <Typography variant="h4" sx={{ color: 'white', marginBottom: 4 }}>
         Welcome to Teletask
       </Typography>
       <Typography variant="h6" sx={{ color: 'white', marginBottom: 4 }}>
-        {username}
+        {username ? `Hello, ${username}` : 'User not identified'}
       </Typography>
       <MainMenu />
     </Box>

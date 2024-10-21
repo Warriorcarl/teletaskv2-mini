@@ -1,78 +1,77 @@
-import { Box, Typography, Button, IconButton, Tabs, Tab } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { Button, Box, Typography } from '@mui/material';
 
-const AirdropsDailyPage = () => {
-  const [tabIndex, setTabIndex] = useState(0);
+const AirdropsDaily = () => {
   const [tasks, setTasks] = useState([]);
-  const router = useRouter();
+  const [completedTasks, setCompletedTasks] = useState([]);
 
+  // Fetch data tugas harian
   useEffect(() => {
-    // Fetch daily tasks from your backend
     async function fetchTasks() {
-      const response = await fetch('/api/daily-tasks');
+      const response = await fetch('/api/get-tasks');  // Panggil API untuk mengambil data tugas
       const data = await response.json();
-      setTasks(data);
+      setTasks(data.tasks.filter(task => !task.completed));  // Tugas yang belum dikerjakan
+      setCompletedTasks(data.tasks.filter(task => task.completed));  // Tugas yang sudah dikerjakan
     }
+
     fetchTasks();
   }, []);
 
-  const handleCompleteTask = async (taskId) => {
-    // Mark task as completed
-    await fetch(`/api/complete-task`, {
+  // Fungsi untuk memindahkan tugas ke sub-menu "Sudah Dikerjakan"
+  const markAsCompleted = async (taskId) => {
+    const response = await fetch('/api/move-task', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ taskId }),
+      body: JSON.stringify({ taskId, menu: 'completed', completed: true }), // Tandai sebagai completed
     });
-    // Update UI to move task to completed
-    setTasks(tasks.map(task => task._id === taskId ? { ...task, completed: true } : task));
-  };
 
-  const handleResetTasks = async () => {
-    // Reset tasks at the end of the day
-    await fetch('/api/reset-tasks');
-    // Refresh tasks
-    setTasks(tasks.map(task => ({ ...task, completed: false })));
+    if (response.ok) {
+      setTasks(tasks.filter(task => task._id !== taskId));  // Hapus dari sub-menu "Belum Dikerjakan"
+      const completedTask = tasks.find(task => task._id === taskId);
+      setCompletedTasks([...completedTasks, completedTask]);  // Pindahkan ke "Sudah Dikerjakan"
+    }
   };
 
   return (
     <Box sx={{ padding: 4 }}>
-      <IconButton onClick={() => router.back()}>
-        <ArrowBackIcon sx={{ color: 'white' }} />
-      </IconButton>
       <Typography variant="h4" sx={{ color: 'white', marginBottom: 4 }}>
-        Airdrop Daily
+        Airdrop Daily - Belum Dikerjakan
       </Typography>
-
-      <Tabs value={tabIndex} onChange={(e, newValue) => setTabIndex(newValue)}>
-        <Tab label="Belum Dikerjakan" />
-        <Tab label="Sudah Dikerjakan" />
-      </Tabs>
-
-      <Box>
-        {tabIndex === 0 && tasks.filter(task => !task.completed).map(task => (
-          <Box key={task.id} sx={{ marginBottom: 4, padding: 2, backgroundColor: '#333', borderRadius: 2 }}>
+      {tasks.length > 0 ? (
+        tasks.map(task => (
+          <Box key={task._id} sx={{ marginBottom: 3 }}>
             <Typography variant="h6" sx={{ color: 'white' }}>{task.title}</Typography>
-            <Button variant="contained" onClick={() => handleCompleteTask(task.id)}>
-              Tandai Selesai
+            <Typography sx={{ color: 'white' }}>{task.text}</Typography>
+            <Button
+              variant="contained"
+              onClick={() => markAsCompleted(task._id)}
+              sx={{ marginTop: 2 }}
+            >
+              Tandai Sudah Dikerjakan
             </Button>
           </Box>
-        ))}
-        {tabIndex === 1 && tasks.filter(task => task.completed).map(task => (
-          <Box key={task.id} sx={{ marginBottom: 4, padding: 2, backgroundColor: '#333', borderRadius: 2 }}>
-            <Typography variant="h6" sx={{ color: 'white' }}>{task.title}</Typography>
-          </Box>
-        ))}
-      </Box>
+        ))
+      ) : (
+        <Typography sx={{ color: 'white' }}>Tidak ada tugas harian yang belum dikerjakan.</Typography>
+      )}
 
-      <Button variant="contained" onClick={handleResetTasks}>
-        Reset Tugas Harian
-      </Button>
+      <Typography variant="h4" sx={{ color: 'white', marginTop: 6 }}>
+        Airdrop Daily - Sudah Dikerjakan
+      </Typography>
+      {completedTasks.length > 0 ? (
+        completedTasks.map(task => (
+          <Box key={task._id} sx={{ marginBottom: 3 }}>
+            <Typography variant="h6" sx={{ color: 'white' }}>{task.title}</Typography>
+            <Typography sx={{ color: 'white' }}>{task.text}</Typography>
+          </Box>
+        ))
+      ) : (
+        <Typography sx={{ color: 'white' }}>Belum ada tugas yang sudah dikerjakan.</Typography>
+      )}
     </Box>
   );
 };
 
-export default AirdropsDailyPage;
+export default AirdropsDaily;

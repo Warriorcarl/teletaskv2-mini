@@ -3,7 +3,7 @@ import { connectToDatabase } from '../../lib/mongodb';
 
 const UserSchema = new mongoose.Schema({
   queryId: String,
-  settings: Object,
+  positions: Object,
 });
 
 let User;
@@ -17,20 +17,20 @@ try {
 export default async function handler(req, res) {
   await connectToDatabase();
 
-  const { queryId, settings } = req.body;
+  const { queryId, positions } = req.body;
 
   try {
     let user = await User.findOne({ queryId });
     if (user) {
-      user.settings = settings;
+      user.positions = positions;
       await user.save();
     } else {
-      const newUser = new User({ queryId, settings });
+      const newUser = new User({ queryId, positions });
       await newUser.save();
     }
 
-    res.status(200).json({ message: 'Settings saved successfully' });
+    res.status(200).json({ message: 'Menu positions saved successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to save settings', error });
+    res.status(500).json({ message: 'Failed to save menu positions', error });
   }
 }
